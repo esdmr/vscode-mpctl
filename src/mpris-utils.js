@@ -97,8 +97,10 @@ function listenToMpris(bus, service) {
 				'org.freedesktop.DBus.Properties',
 			);
 
-			let metadata = await player.Metadata;
-			let playbackStatus = await player.PlaybackStatus;
+			/** @type {Readonly<Metadata_Map>} */
+			let metadata;
+			/** @type {Playback_Status} */
+			let playbackStatus;
 
 			callback = (
 				_interfaceName,
@@ -115,15 +117,18 @@ function listenToMpris(bus, service) {
 
 				if (
 					changedProperties.Metadata ||
-					changedProperties.PlaybackStatus
+					changedProperties.PlaybackStatus ||
+					metadata ||
+					playbackStatus
 				) {
-					controller.enqueue(
-						buildMprisMetadata(metadata, playbackStatus),
-					);
+					controller.enqueue(buildMprisMetadata(metadata, playbackStatus));
 				}
 			};
 
 			await properties.addListener('PropertiesChanged', callback);
+
+			metadata = await player.Metadata;
+			playbackStatus = await player.PlaybackStatus;
 			controller.enqueue(buildMprisMetadata(metadata, playbackStatus));
 		},
 		async cancel() {
