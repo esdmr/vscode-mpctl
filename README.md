@@ -7,6 +7,6 @@ Control any media player that supports MPRIS.
 ```sh
 git clone https://github.com/esdmr/vscode-mprisctl
 cd vscode-mprisctl
-corepack pnpm i
+corepack pnpm i -P
 ln -fis $PWD ~/.vscode/extensions/esdmr.mprisctl
 ```
