@@ -1,0 +1,119 @@
+{
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "author": "Saeed M Rad <esdmr0@gmail.com> (https://github.com/esdmr)",
+  "bugs": "https://github.com/esdmr/vscode-mprisctl/issues",
+  "categories": [
+    "Other"
+  ],
+  "dependencies": {
+    "dbus-ts": "^0.0.7",
+    "mime-sniffer": "^0.0.3"
+  },
+  "description": "Control any media player that supports MPRIS",
+  "devDependencies": {
+    "@types/node": "^20.17.17",
+    "@types/vscode": "1.99.0",
+    "webpack": "npm:ignoredep@^200.9999.0",
+    "xo": "^0.60.0"
+  },
+  "displayName": "MPRIS Media Control",
+  "engines": {
+    "node": ">=20",
+    "vscode": "^1.99.0"
+  },
+  "homepage": "https://github.com/esdmr/vscode-mprisctl#readme",
+  "keywords": [
+    "Media",
+    "Music",
+    "Player",
+    "D-Bus",
+    "MPRIS",
+    "MediaPlayer2",
+    "Audacious",
+    "Brave",
+    "Chromium",
+    "Cmus",
+    "Feishin",
+    "Firefox",
+    "gmusicbrowser",
+    "Guayadeque",
+    "KDE Connect",
+    "mpv",
+    "ncspot",
+    "Plattenalbum",
+    "Quod Libet",
+    "Resonance",
+    "Spotify",
+    "Spotube",
+    "Telegram",
+    "Tidal HiFi",
+    "VLC"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "name": "mprisctl",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "dbus"
+    ]
+  },
+  "preview": true,
+  "publisher": "esdmr",
+  "repository": "https://github.com/esdmr/vscode-mprisctl",
+  "version": "0.1.0",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mprisctl.next",
+        "title": "Next Track",
+        "shortTitle": "Next",
+        "icon": "$(debug-continue)",
+        "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mprisctl.pause",
+        "title": "Pause Media",
+        "shortTitle": "Pause",
+        "icon": "$(debug-pause)",
+        "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mprisctl.play_pause",
+        "title": "Toggle Media Play/Pause",
+        "shortTitle": "Play/Pause",
+        "icon": "$(debug-start)",
+        "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mprisctl.play",
+        "title": "Play Media",
+        "shortTitle": "Play",
+        "icon": "$(debug-start)",
+        "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mprisctl.previous",
+        "title": "Previous Track",
+        "shortTitle": "Previous",
+        "icon": "$(debug-reverse-continue)",
+        "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mprisctl.reconnect",
+        "title": "Reconnect to D-Bus",
+        "shortTitle": "Reconnect",
+        "icon": "$(debug-restart)",
+        "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mprisctl.stop",
+        "title": "Stop Media",
+        "shortTitle": "Stop",
+        "icon": "$(debug-stop)",
+        "category": "MPRIS Media Control"
+      }
+    ]
+  }
+}
