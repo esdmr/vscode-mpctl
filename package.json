@@ -9,6 +9,7 @@
   ],
   "dependencies": {
     "dbus-ts": "0.0.7",
+    "jimp": "^1.6.0",
     "mime-sniffer": "0.0.3"
   },
   "description": "Control any media player that supports MPRIS",

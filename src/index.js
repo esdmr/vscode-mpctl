@@ -8,6 +8,7 @@ const {
 	listenToMpris,
 } = require('./mpris-utils.js');
 const {fetchImage} = require('./image-utils.js');
+const jimp = require('jimp');
 
 /** @type {MessageBus<MediaPlayer2> | undefined} */
 let bus;
@@ -75,15 +76,17 @@ function createStatus() {
 				return;
 			}
 
-			const image = await fetchImage(
-				code.Uri.parse(metadata.artUrl, true),
-			);
+			const image = await fetchImage(code.Uri.parse(metadata.artUrl, true));
+
+			const j = await jimp.Jimp.read(image);
+			j.resize({w: 128, h: 128});
+			const b64 = await j.getBase64('image/png');
 
 			const tooltip = new code.MarkdownString('', true);
 			tooltip.isTrusted = true;
 			tooltip.supportHtml = true;
 			tooltip.appendMarkdown(
-				`<img src="${image}" alt="" width="128" height="128">\n\n`,
+				`<img src="${b64}" alt="" width="128" height="128">\n\n`,
 			);
 			tooltip.appendText(metadata.title);
 			tooltip.appendMarkdown('\n\nby *\u{200B}');
