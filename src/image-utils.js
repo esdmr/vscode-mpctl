@@ -13,7 +13,11 @@ const blankImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=';
  * @returns {Promise<string>}
  */
 async function fetchImage(uri) {
-	if (uri.scheme === 'http' || uri.scheme === 'https') {
+	if (
+		uri.scheme === 'http' ||
+		uri.scheme === 'https' ||
+		uri.scheme === 'data'
+	) {
 		return uri.toString(true);
 	}
 
@@ -33,11 +37,7 @@ async function fetchImage(uri) {
 			});
 		});
 	} catch (error) {
-		console.error(
-			'MPRIS Control: Unknown file extension:',
-			uri.fsPath,
-			error,
-		);
+		console.error('MPRIS Control: Unknown file extension:', uri.fsPath, error);
 		return blankImageUrl;
 	}
 
