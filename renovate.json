@@ -1,0 +1,153 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:js-app",
+		"helpers:pinGitHubActionDigests",
+		":ignoreUnstable"
+	],
+	"labels": [
+		"renovate"
+	],
+	"major": {
+		"addLabels": [
+			"renovate/major"
+		],
+		"automerge": false
+	},
+	"minor": {
+		"automerge": true
+	},
+	"patch": {
+		"automerge": true
+	},
+	"pin": {
+		"automerge": true
+	},
+	"digest": {
+		"automerge": true
+	},
+	"lockFileMaintenance": {
+		"enabled": true,
+		"addLabels": [
+			"renovate/lockfile"
+		],
+		"schedule": "at 12am on thursday",
+		"automerge": true
+	},
+	"npm": {
+		"minimumReleaseAge": "21 days"
+	},
+	"timezone": "Asia/Tehran",
+	"ignoreTests": true,
+	"packageRules": [
+		{
+			"matchDepTypes": [
+				"devDependencies"
+			],
+			"addLabels": [
+				"renovate/development"
+			]
+		},
+		{
+			"matchDepTypes": [
+				"dependencies",
+				"optionalDependencies",
+				"peerDependencies"
+			],
+			"addLabels": [
+				"renovate/production"
+			]
+		},
+		{
+			"matchPackageNames": [
+				"@vitest/coverage-c8",
+				"vitest"
+			],
+			"addLabels": [
+				"renovate/testing"
+			],
+			"groupName": "testing"
+		},
+		{
+			"addLabels": [
+				"renovate/typescript"
+			],
+			"matchPackageNames": [
+				"/^typescript$/",
+				"/^@types//"
+			]
+		},
+		{
+			"matchPackageNames": [
+				"wouter-preact",
+				"@prefresh/vite"
+			],
+			"enabled": false
+		},
+		{
+			"matchPackageNames": [
+				"@types/vscode"
+			],
+			"matchUpdateTypes": [
+				"major",
+				"minor",
+				"patch"
+			],
+			"enabled": false
+		},
+		{
+			"matchPackageNames": [
+				"@types/node"
+			],
+			"matchUpdateTypes": [
+				"major"
+			],
+			"enabled": false
+		},
+		{
+			"matchDepTypes": [
+				"dependencies",
+				"optionalDependencies",
+				"peerDependencies"
+			],
+			"matchUpdateTypes": [
+				"minor"
+			],
+			"automerge": false
+		},
+		{
+			"matchManagers": [
+				"github-actions"
+			],
+			"addLabels": [
+				"renovate/actions"
+			],
+			"schedule": "at 12am on thursday",
+			"automerge": false
+		},
+		{
+			"matchManagers": [
+				"github-actions"
+			],
+			"addLabels": [
+				"renovate/actions/official"
+			],
+			"groupName": "actions",
+			"schedule": "at any time",
+			"automerge": true,
+			"minimumReleaseAge": "3 days",
+			"matchPackageNames": [
+				"/^actions//"
+			]
+		},
+		{
+			"matchManagers": [
+				"github-actions"
+			],
+			"matchUpdateTypes": [
+				"major"
+			],
+			"automerge": false
+		}
+	]
+}
