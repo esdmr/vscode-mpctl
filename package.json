@@ -8,15 +8,15 @@
     "Other"
   ],
   "dependencies": {
-    "dbus-ts": "^0.0.7",
-    "mime-sniffer": "^0.0.3"
+    "dbus-ts": "0.0.7",
+    "mime-sniffer": "0.0.3"
   },
   "description": "Control any media player that supports MPRIS",
   "devDependencies": {
-    "@types/node": "^20.17.17",
+    "@types/node": "20.17.17",
     "@types/vscode": "1.99.0",
-    "webpack": "npm:ignoredep@^200.9999.0",
-    "xo": "^0.60.0"
+    "webpack": "npm:ignoredep@200.9999.0",
+    "xo": "0.60.0"
   },
   "displayName": "MPRIS Media Control",
   "engines": {
