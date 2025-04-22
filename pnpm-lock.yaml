@@ -19,8 +19,8 @@ importers:
         version: 0.0.3
     devDependencies:
       '@types/node':
-        specifier: 20.17.29
-        version: 20.17.29
+        specifier: 20.17.30
+        version: 20.17.30
       '@types/vscode':
         specifier: 1.99.0
         version: 1.99.0
@@ -246,8 +246,8 @@ packages:
   '@types/node@16.9.1':
     resolution: {integrity: sha512-QpLcX9ZSsq3YYUUnD3nFDY8H7wctAhQj/TFKL8Ya8v5fMm3CFXxo8zStsLAl780ltoYoo1WvKUVGBQK+1ifr7g==}
 
-  '@types/node@20.17.29':
-    resolution: {integrity: sha512-6rbekrnsa5WWCo5UnPYEKfNuoF2yqAmigUKXM8wBzfEbZc+E/CITqjCrHqiq+6QBifsw0ZDaA5VdTFONOtG7+A==}
+  '@types/node@20.17.30':
+    resolution: {integrity: sha512-7zf4YyHA+jvBNfVrk2Gtvs6x7E8V+YDW05bNfG2XkWDJfYRXrTiP/DsB2zSYTaHX0bGIujTBQdMVAhb+j7mwpg==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2329,7 +2329,7 @@ snapshots:
 
   '@types/node@16.9.1': {}
 
-  '@types/node@20.17.29':
+  '@types/node@20.17.30':
     dependencies:
       undici-types: 6.19.8
 
