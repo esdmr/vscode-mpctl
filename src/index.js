@@ -58,21 +58,18 @@ function createStatus() {
 	return new WritableStream({
 		start() {
 			console.log('MPRIS status: Starting status.', status);
-			status = code.window.createStatusBarItem(
-				code.StatusBarAlignment.Right,
-			);
+			status = code.window.createStatusBarItem(code.StatusBarAlignment.Right);
 			status.name = 'MPRIS Media Control';
-			status.text = '$(debug-stop) Not Playing'; // 1F3B5
-			status.command = 'mprisctl.play';
+			status.text = '$(music)';
 			status.show();
 		},
 		async write(metadata) {
 			console.debug('MPRIS status: Got metadata:', metadata);
 
 			if (!metadata.title) {
-				status.text = '$(debug-stop) Not Playing';
+				status.text = '$(music)';
 				status.tooltip = undefined;
-				status.command = 'mprisctl.play';
+				status.command = service ? 'mprisctl.play' : undefined;
 				return;
 			}
 
