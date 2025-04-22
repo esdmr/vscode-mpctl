@@ -14,7 +14,7 @@
   },
   "description": "Control any media player that supports MPRIS",
   "devDependencies": {
-    "@types/node": "20.17.28",
+    "@types/node": "20.17.29",
     "@types/vscode": "1.99.0",
     "webpack": "npm:ignoredep@200.9999.0",
     "xo": "0.60.0"
