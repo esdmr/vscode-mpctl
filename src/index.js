@@ -7,8 +7,11 @@ const {
 	sendMprisCommand,
 	listenToMpris,
 } = require('./mpris-utils.js');
-const {fetchImage} = require('./image-utils.js');
-const jimp = require('jimp');
+const {
+	fetchImage,
+	getAlignmentImage,
+	resizeImage,
+} = require('./image-utils.js');
 
 /** @type {MessageBus<MediaPlayer2> | undefined} */
 let bus;
@@ -23,6 +26,7 @@ let status;
 let metadataStream;
 
 const listFormat = new Intl.ListFormat('en');
+const alignmentImage = getAlignmentImage(36);
 
 async function reconnectDbus() {
 	await metadataStream?.cancel();
@@ -44,9 +48,6 @@ async function reconnectDbus() {
 		preventAbort: true,
 	});
 }
-
-const alignmentImage =
-	'<br><img src="data:image/svg+xml,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2236%22%20height=%220%22/>" alt="">';
 
 /**
  * @returns {WritableStream<MprisMetadata>}
@@ -73,17 +74,16 @@ function createStatus() {
 				return;
 			}
 
-			const image = await fetchImage(code.Uri.parse(metadata.artUrl, true));
-
-			const j = await jimp.Jimp.read(image);
-			j.resize({w: 128, h: 128});
-			const b64 = await j.getBase64('image/png');
+			const image = await resizeImage(
+				await fetchImage(code.Uri.parse(metadata.artUrl, true)),
+				128,
+			);
 
 			const tooltip = new code.MarkdownString('', true);
 			tooltip.isTrusted = true;
 			tooltip.supportHtml = true;
 			tooltip.appendMarkdown(
-				`<img src="${b64}" alt="" width="128" height="128">\n\n`,
+				`<img src="${image}" alt="" width="128" height="128">\n\n`,
 			);
 			tooltip.appendText(metadata.title);
 			tooltip.appendMarkdown('\n\nby *\u{200B}');

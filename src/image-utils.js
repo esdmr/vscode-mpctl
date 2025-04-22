@@ -5,8 +5,17 @@
 const {Buffer} = require('node:buffer');
 const mimeSniffer = require('mime-sniffer');
 const code = require('vscode');
+const jimp = require('jimp');
 
-const blankImageUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=';
+/**
+ * @param {number} width
+ */
+function getAlignmentImage(width) {
+	return `<br><img src="data:image/svg+xml,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22${width}%22%20height=%220%22/>" alt="">`;
+}
+
+const blankImageUrl =
+	'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
 /**
  * @param {Uri} uri
@@ -44,4 +53,20 @@ async function fetchImage(uri) {
 	return `data:${mime};base64,${buffer.toString('base64')}`;
 }
 
-module.exports = {blankImageUrl, fetchImage};
+/**
+ * @param {string} image
+ * @param {number} width
+ * @param {number} [height=width]
+ */
+async function resizeImage(image, width, height = width) {
+	const jimpImage = await jimp.Jimp.read(image);
+	jimpImage.resize({w: width, h: height});
+	return jimpImage.getBase64('image/png');
+}
+
+module.exports = {
+	blankImageUrl,
+	getAlignmentImage,
+	fetchImage,
+	resizeImage,
+};
