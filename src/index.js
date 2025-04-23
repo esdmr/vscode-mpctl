@@ -7,11 +7,8 @@ const {
 	sendMprisCommand,
 	listenToMpris,
 } = require('./mpris-utils.js');
-const {
-	fetchImage,
-	getAlignmentImage,
-	resizeImage,
-} = require('./image-utils.js');
+const {fetchImage, resizeImage} = require('./image-utils.js');
+const {artImageSize, formatMetadata} = require('./vscode-utils.js');
 
 /** @type {MessageBus<MediaPlayer2> | undefined} */
 let bus;
@@ -24,9 +21,6 @@ let status;
 
 /** @type {ReadableStream<MprisMetadata> | undefined} */
 let metadataStream;
-
-const listFormat = new Intl.ListFormat('en');
-const alignmentImage = getAlignmentImage(36);
 
 async function reconnectDbus() {
 	await metadataStream?.cancel();
@@ -76,53 +70,13 @@ function createStatus() {
 
 			const image = await resizeImage(
 				await fetchImage(code.Uri.parse(metadata.artUrl, true)),
-				128,
+				artImageSize,
 			);
-
-			const tooltip = new code.MarkdownString('', true);
-			tooltip.isTrusted = true;
-			tooltip.supportHtml = true;
-			tooltip.appendMarkdown(
-				`<img src="${image}" alt="" width="128" height="128">\n\n`,
-			);
-			tooltip.appendText(metadata.title);
-			tooltip.appendMarkdown('\n\nby *\u{200B}');
-			tooltip.appendText(
-				listFormat.format(
-					metadata.artists.length > 2
-						? [metadata.artists[0], '…']
-						: metadata.artists,
-				),
-			);
-			tooltip.appendMarkdown('* from *\u{200B}');
-			tooltip.appendText(metadata.album);
-			tooltip.appendMarkdown('*\n\n');
-			tooltip.appendMarkdown('<table style="width: 128px">');
-			tooltip.appendMarkdown('<tr>');
-			tooltip.appendMarkdown(
-				`<td align="center"><a href="command:mprisctl.previous">$(debug-reverse-continue)</a>${alignmentImage}</td>`,
-			);
-
-			if (metadata.playing) {
-				tooltip.appendMarkdown(
-					`<td align="center"><a href="command:mprisctl.play_pause">$(debug-pause)</a>${alignmentImage}</td>`,
-				);
-			} else {
-				tooltip.appendMarkdown(
-					`<td align="center"><a href="command:mprisctl.play_pause">$(debug-start)</a>${alignmentImage}</td>`,
-				);
-			}
-
-			tooltip.appendMarkdown(
-				`<td align="center"><a href="command:mprisctl.next">$(debug-continue)</a>${alignmentImage}</td>`,
-			);
-			tooltip.appendMarkdown('</tr>');
-			tooltip.appendMarkdown('</table>\n');
 
 			status.text =
 				(metadata.playing ? '$(debug-start) ' : '$(debug-pause) ') +
 				metadata.title;
-			status.tooltip = tooltip;
+			status.tooltip = formatMetadata(metadata, image);
 			status.command = undefined;
 		},
 		close() {
