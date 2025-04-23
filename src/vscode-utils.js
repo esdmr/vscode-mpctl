@@ -43,21 +43,21 @@ function formatMetadata(metadata, image) {
 	}
 
 	t.appendMarkdown(
-		`\n<table style="width: 128px"><tr><td align="center"><a href="command:mprisctl.previous">$(debug-reverse-continue)</a>${alignmentImage}</td>`,
+		`\n<table style="width: 128px"><tr><td align="center"><a href="command:mpctl.previous">$(debug-reverse-continue)</a>${alignmentImage}</td>`,
 	);
 
 	if (metadata.playing) {
 		t.appendMarkdown(
-			`<td align="center"><a href="command:mprisctl.play_pause">$(debug-pause)</a>${alignmentImage}</td>`,
+			`<td align="center"><a href="command:mpctl.play_pause">$(debug-pause)</a>${alignmentImage}</td>`,
 		);
 	} else {
 		t.appendMarkdown(
-			`<td align="center"><a href="command:mprisctl.play_pause">$(debug-start)</a>${alignmentImage}</td>`,
+			`<td align="center"><a href="command:mpctl.play_pause">$(debug-start)</a>${alignmentImage}</td>`,
 		);
 	}
 
 	t.appendMarkdown(
-		`<td align="center"><a href="command:mprisctl.next">$(debug-continue)</a>${alignmentImage}</td></tr></table>`,
+		`<td align="center"><a href="command:mpctl.next">$(debug-continue)</a>${alignmentImage}</td></tr></table>`,
 	);
 
 	return t;

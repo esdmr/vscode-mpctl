@@ -64,7 +64,7 @@ function createStatus() {
 			if (!metadata.title) {
 				status.text = '$(music)';
 				status.tooltip = undefined;
-				status.command = service ? 'mprisctl.play' : undefined;
+				status.command = service ? 'mpctl.play' : undefined;
 				return;
 			}
 
@@ -98,35 +98,35 @@ async function activate(context) {
 		await reconnectDbus();
 
 		context.subscriptions.push(
-			code.commands.registerCommand('mprisctl.next', async () => {
+			code.commands.registerCommand('mpctl.next', async () => {
 				if (!bus || !service) await reconnectDbus();
 				if (!bus || !service) return;
 				await sendMprisCommand(bus, service, 'Next');
 			}),
-			code.commands.registerCommand('mprisctl.pause', async () => {
+			code.commands.registerCommand('mpctl.pause', async () => {
 				if (!bus || !service) await reconnectDbus();
 				if (!bus || !service) return;
 				await sendMprisCommand(bus, service, 'Pause');
 			}),
-			code.commands.registerCommand('mprisctl.play_pause', async () => {
+			code.commands.registerCommand('mpctl.play_pause', async () => {
 				if (!bus || !service) await reconnectDbus();
 				if (!bus || !service) return;
 				await sendMprisCommand(bus, service, 'PlayPause');
 			}),
-			code.commands.registerCommand('mprisctl.play', async () => {
+			code.commands.registerCommand('mpctl.play', async () => {
 				if (!bus || !service) await reconnectDbus();
 				if (!bus || !service) return;
 				await sendMprisCommand(bus, service, 'Play');
 			}),
-			code.commands.registerCommand('mprisctl.previous', async () => {
+			code.commands.registerCommand('mpctl.previous', async () => {
 				if (!bus || !service) await reconnectDbus();
 				if (!bus || !service) return;
 				await sendMprisCommand(bus, service, 'Previous');
 			}),
-			code.commands.registerCommand('mprisctl.reconnect', async () => {
+			code.commands.registerCommand('mpctl.reconnect', async () => {
 				if (!bus || !service) await reconnectDbus();
 			}),
-			code.commands.registerCommand('mprisctl.stop', async () => {
+			code.commands.registerCommand('mpctl.stop', async () => {
 				if (!bus || !service) await reconnectDbus();
 				if (!bus || !service) return;
 				await sendMprisCommand(bus, service, 'Stop');

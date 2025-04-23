@@ -3,7 +3,7 @@
     "onStartupFinished"
   ],
   "author": "Saeed M Rad <esdmr0@gmail.com> (https://github.com/esdmr)",
-  "bugs": "https://github.com/esdmr/vscode-mprisctl/issues",
+  "bugs": "https://github.com/esdmr/vscode-mpctl/issues",
   "categories": [
     "Other"
   ],
@@ -24,7 +24,7 @@
     "node": ">=20",
     "vscode": "^1.99.0"
   },
-  "homepage": "https://github.com/esdmr/vscode-mprisctl#readme",
+  "homepage": "https://github.com/esdmr/vscode-mpctl#readme",
   "keywords": [
     "Media",
     "Music",
@@ -54,7 +54,7 @@
   ],
   "license": "MIT",
   "main": "src/index.js",
-  "name": "mprisctl",
+  "name": "mpctl",
   "pnpm": {
     "onlyBuiltDependencies": [
       "dbus"
@@ -62,54 +62,54 @@
   },
   "preview": true,
   "publisher": "esdmr",
-  "repository": "https://github.com/esdmr/vscode-mprisctl",
+  "repository": "https://github.com/esdmr/vscode-mpctl",
   "version": "0.1.0",
   "contributes": {
     "commands": [
       {
-        "command": "mprisctl.next",
+        "command": "mpctl.next",
         "title": "Next Track",
         "shortTitle": "Next",
         "icon": "$(debug-continue)",
         "category": "MPRIS Media Control"
       },
       {
-        "command": "mprisctl.pause",
+        "command": "mpctl.pause",
         "title": "Pause Media",
         "shortTitle": "Pause",
         "icon": "$(debug-pause)",
         "category": "MPRIS Media Control"
       },
       {
-        "command": "mprisctl.play_pause",
+        "command": "mpctl.play_pause",
         "title": "Toggle Media Play/Pause",
         "shortTitle": "Play/Pause",
         "icon": "$(debug-start)",
         "category": "MPRIS Media Control"
       },
       {
-        "command": "mprisctl.play",
+        "command": "mpctl.play",
         "title": "Play Media",
         "shortTitle": "Play",
         "icon": "$(debug-start)",
         "category": "MPRIS Media Control"
       },
       {
-        "command": "mprisctl.previous",
+        "command": "mpctl.previous",
         "title": "Previous Track",
         "shortTitle": "Previous",
         "icon": "$(debug-reverse-continue)",
         "category": "MPRIS Media Control"
       },
       {
-        "command": "mprisctl.reconnect",
+        "command": "mpctl.reconnect",
         "title": "Reconnect to D-Bus",
         "shortTitle": "Reconnect",
         "icon": "$(debug-restart)",
         "category": "MPRIS Media Control"
       },
       {
-        "command": "mprisctl.stop",
+        "command": "mpctl.stop",
         "title": "Stop Media",
         "shortTitle": "Stop",
         "icon": "$(debug-stop)",
