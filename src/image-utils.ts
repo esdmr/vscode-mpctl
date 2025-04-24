@@ -1,24 +1,16 @@
-/** @import * as types from './types.js' */
-const {Buffer} = require('node:buffer');
-const mimeSniffer = require('mime-sniffer');
-const code = require('vscode');
-const jimp = require('jimp');
+import {Buffer} from 'node:buffer';
+import mimeSniffer from 'mime-sniffer';
+import code from 'vscode';
+import {Jimp} from 'jimp';
 
-/**
- * @param {number} width
- */
-function getAlignmentImage(width) {
+export function getAlignmentImage(width: number) {
 	return `<br><img src="data:image/svg+xml,<svg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22${width}%22%20height=%220%22/>" alt="">`;
 }
 
-const blankImageUrl =
+export const blankImageUrl =
 	'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
-/**
- * @param {types.Uri} uri
- * @returns {Promise<string>}
- */
-async function fetchImage(uri) {
+export async function fetchImage(uri: code.Uri) {
 	if (
 		uri.scheme === 'http' ||
 		uri.scheme === 'https' ||
@@ -29,14 +21,13 @@ async function fetchImage(uri) {
 
 	const content = await code.workspace.fs.readFile(uri);
 	const buffer = Buffer.from(content);
-	/** @type {string} */
-	let mime;
+	let mime: string;
 
 	try {
 		mime = await new Promise((resolve, reject) => {
 			mimeSniffer.lookup(buffer, (error, info) => {
 				if (error) {
-					reject(error);
+					reject(error as Error);
 				} else {
 					resolve(info.mime);
 				}
@@ -50,20 +41,12 @@ async function fetchImage(uri) {
 	return `data:${mime};base64,${buffer.toString('base64')}`;
 }
 
-/**
- * @param {string} image
- * @param {number} width
- * @param {number} [height=width]
- */
-async function resizeImage(image, width, height = width) {
-	const jimpImage = await jimp.Jimp.read(image);
-	jimpImage.resize({w: width, h: height});
-	return jimpImage.getBase64('image/png');
+export async function resizeImage(
+	image: string,
+	width: number,
+	height = width,
+) {
+	const jimp = await Jimp.read(image);
+	jimp.resize({w: width, h: height});
+	return jimp.getBase64('image/png');
 }
-
-module.exports = {
-	blankImageUrl,
-	getAlignmentImage,
-	fetchImage,
-	resizeImage,
-};

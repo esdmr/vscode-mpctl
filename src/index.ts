@@ -1,7 +1,6 @@
-/** @import * as types from './types.js' */
-const code = require('vscode');
-const {MprisBusCache, MprisListenerService} = require('./mpris-utils.js');
-const {MprisStatusService} = require('./vscode-utils.js');
+import code from 'vscode';
+import {MprisBusCache, MprisListenerService} from './mpris-utils.js';
+import {MprisStatusService} from './vscode-utils.js';
 
 const status = new MprisStatusService();
 const bus = new MprisBusCache();
@@ -16,10 +15,7 @@ async function reconnectDbus() {
 	status.start();
 }
 
-/**
- * @param {code.ExtensionContext} context
- */
-async function activate(context) {
+export async function activate(context: code.ExtensionContext) {
 	try {
 		await reconnectDbus();
 
@@ -47,8 +43,7 @@ async function activate(context) {
 			}),
 			code.commands.registerCommand('mpctl.switch', async () => {
 				const services = await bus.getServices();
-				/** @type {code.QuickPickItem[]} */
-				const items = [];
+				const items: code.QuickPickItem[] = [];
 
 				for (const i of services) {
 					items.push({
@@ -64,7 +59,7 @@ async function activate(context) {
 				});
 
 				if (selection) {
-					bus.setService(selection.description);
+					await bus.setService(selection.description);
 				}
 			}),
 		);
@@ -74,10 +69,8 @@ async function activate(context) {
 	}
 }
 
-async function deactivate() {
+export async function deactivate() {
 	await listener.asyncDispose();
 	await bus.asyncDispose();
 	status.dispose();
 }
-
-module.exports = {activate, deactivate};

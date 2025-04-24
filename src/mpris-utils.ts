@@ -1,15 +1,26 @@
-/** @import * as types from './types.js' */
-const code = require('vscode');
-const {sessionBus} = require('dbus-ts');
-const {ensureString, ensureArray} = require('./type-utils.js');
-const {blankImageUrl} = require('./image-utils.js');
+import code from 'vscode';
+import {sessionBus} from 'dbus-ts';
+import {ensureString, ensureArray} from './type-utils.js';
+import {blankImageUrl} from './image-utils.js';
+import type {
+	Interface,
+	MetadataMap,
+	MprisMessageBus,
+	PropertiesChangedHandler,
+} from './types.js';
 
-/**
- * @param {types.MetadataMap} metadataMap
- * @param {string} playbackStatus
- * @returns {types.MprisMetadata}
- */
-function buildMprisMetadata(metadataMap, playbackStatus) {
+export type MprisMetadata = {
+	title: string;
+	artists: string[];
+	album: string;
+	artUrl: string;
+	playing: boolean;
+};
+
+function buildMprisMetadata(
+	metadataMap: MetadataMap,
+	playbackStatus: string,
+): MprisMetadata {
 	return {
 		title: ensureString(metadataMap['xesam:title']),
 		artists: ensureArray(metadataMap['xesam:artist'])
@@ -21,21 +32,14 @@ function buildMprisMetadata(metadataMap, playbackStatus) {
 	};
 }
 
-class MprisBusCache {
-	/** @type {types.MprisMessageBus | undefined} */
-	#bus;
-	/** @type {string | undefined} */
-	#service;
-	/** @type {types.Interface<'org.freedesktop.DBus'> | undefined} */
-	#dbusRoot;
-	/** @type {types.Interface<'org.freedesktop.DBus.Properties'> | undefined} */
-	#dbusProperties;
-	/** @type {types.Interface<'org.mpris.MediaPlayer2.Player'> | undefined} */
-	#mprisPlayer;
-	/** @type {code.EventEmitter<void>} */
-	#onServiceChanged = new code.EventEmitter();
-	/** @type {types.PropertiesChangedHandler | undefined} */
-	#propertiesChangedHandler;
+export class MprisBusCache {
+	#bus: MprisMessageBus | undefined;
+	#service: string | undefined;
+	#dbusRoot: Interface<'org.freedesktop.DBus'> | undefined;
+	#dbusProperties: Interface<'org.freedesktop.DBus.Properties'> | undefined;
+	#mprisPlayer: Interface<'org.mpris.MediaPlayer2.Player'> | undefined;
+	#propertiesChangedHandler: PropertiesChangedHandler | undefined;
+	readonly #onServiceChanged = new code.EventEmitter<void>();
 
 	get service() {
 		return this.#service;
@@ -61,7 +65,7 @@ class MprisBusCache {
 		);
 
 		const [service] = await this.getServices();
-		this.setService(service);
+		await this.setService(service);
 	}
 
 	async stop() {
@@ -79,10 +83,7 @@ class MprisBusCache {
 		this.#propertiesChangedHandler = undefined;
 	}
 
-	/**
-	 * @param {string | undefined} newService
-	 */
-	async setService(newService) {
+	async setService(newService: string | undefined) {
 		if (!this.#bus) {
 			await this.start();
 		}
@@ -126,10 +127,7 @@ class MprisBusCache {
 		this.#onServiceChanged.fire();
 	}
 
-	/**
-	 * @param {types.PropertiesChangedHandler | undefined} handler
-	 */
-	async onPropertiesChanged(handler) {
+	async onPropertiesChanged(handler: PropertiesChangedHandler | undefined) {
 		if (this.#propertiesChangedHandler && this.#dbusProperties) {
 			await this.#dbusProperties.removeListener(
 				'PropertiesChanged',
@@ -160,10 +158,7 @@ class MprisBusCache {
 		);
 	}
 
-	/**
-	 * @param {string} service
-	 */
-	async getServiceName(service) {
+	async getServiceName(service: string) {
 		if (!this.#bus) {
 			await this.start();
 		}
@@ -181,10 +176,9 @@ class MprisBusCache {
 		return mprisRoot.Identity;
 	}
 
-	/**
-	 * @param {'Next' | 'Previous' | 'Pause' | 'PlayPause' | 'Stop' | 'Play'} command
-	 */
-	async sendMprisCommand(command) {
+	async sendMprisCommand(
+		command: 'Next' | 'Previous' | 'Pause' | 'PlayPause' | 'Stop' | 'Play',
+	) {
 		if (!this.#mprisPlayer) {
 			await this.start();
 		}
@@ -197,32 +191,28 @@ class MprisBusCache {
 	}
 }
 
-class MprisSinkCache {
-	/** @type {types.MprisSink | undefined} */
-	#sink;
-	/** @type {types.Disposable | undefined} */
-	#sinkStartHandler;
-	/** @type {types.MprisMetadata | undefined} */
-	#cachedMetadata;
+export type MprisSink = {
+	onStart(handler: () => void): code.Disposable;
+	update(metadata: MprisMetadata): Promise<void>;
+};
 
-	/**
-	 * @param {types.MprisSink | undefined} sink
-	 */
-	setSink(sink) {
+class MprisSinkCache {
+	#sink: MprisSink | undefined;
+	#sinkStartHandler: code.Disposable | undefined;
+	#cachedMetadata: MprisMetadata | undefined;
+
+	setSink(sink: MprisSink | undefined) {
 		this.#sinkStartHandler?.dispose();
 		this.#sink = sink;
 
-		this.#sinkStartHandler = sink?.onStart(() => {
-			if (this.#cachedMetadata) sink.update(this.#cachedMetadata);
+		this.#sinkStartHandler = sink?.onStart(async () => {
+			if (this.#cachedMetadata) await sink.update(this.#cachedMetadata);
 		});
 
 		return this;
 	}
 
-	/**
-	 * @param {MprisBusCache} bus
-	 */
-	async update(bus) {
+	async update(bus: MprisBusCache) {
 		if (!bus.mprisPlayer) return;
 
 		this.#cachedMetadata = buildMprisMetadata(
@@ -233,10 +223,7 @@ class MprisSinkCache {
 		await this.#sink?.update(this.#cachedMetadata);
 	}
 
-	/**
-	 * @param {MprisBusCache} bus
-	 */
-	bind(bus) {
+	bind(bus: MprisBusCache) {
 		return this.update.bind(this, bus);
 	}
 
@@ -245,23 +232,16 @@ class MprisSinkCache {
 	}
 }
 
-class MprisListenerService {
-	#bus;
-	#sinkCache = new MprisSinkCache();
-	/** @type {types.Disposable | undefined} */
-	#serviceChangeHandler;
+export class MprisListenerService {
+	readonly #bus;
+	readonly #sinkCache = new MprisSinkCache();
+	#serviceChangeHandler: code.Disposable | undefined;
 
-	/**
-	 * @param {MprisBusCache} bus
-	 */
-	constructor(bus) {
+	constructor(bus: MprisBusCache) {
 		this.#bus = bus;
 	}
 
-	/**
-	 * @param {types.MprisSink | undefined} sink
-	 */
-	setSink(sink) {
+	setSink(sink: MprisSink | undefined) {
 		this.#sinkCache.setSink(sink);
 		return this;
 	}
@@ -294,8 +274,3 @@ class MprisListenerService {
 		this.setSink(undefined);
 	}
 }
-
-module.exports = {
-	MprisBusCache,
-	MprisListenerService,
-};

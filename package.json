@@ -41,7 +41,7 @@
   "publisher": "esdmr",
   "main": "dist/index.js",
   "scripts": {
-    "bundle": "pnpm tsup src/index.js --clean --external vscode --sourcemap --treeshake",
+    "bundle": "tsup",
     "package": "vsce package --no-git-tag-version --no-update-package-json"
   },
   "contributes": {

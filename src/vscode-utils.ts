@@ -1,20 +1,12 @@
-/** @import * as types from './types.js' */
-const code = require('vscode');
-const {
-	getAlignmentImage,
-	fetchImage,
-	resizeImage,
-} = require('./image-utils.js');
+import code from 'vscode';
+import {getAlignmentImage, fetchImage, resizeImage} from './image-utils.js';
+import type {MprisMetadata, MprisSink} from './mpris-utils.js';
 
 const listFormat = new Intl.ListFormat('en');
 const alignmentImage = getAlignmentImage(36);
-const artImageSize = 128;
+export const artImageSize = 128;
 
-/**
- * @param {types.MprisMetadata} metadata
- * @param {string} image
- */
-function formatMetadata(metadata, image) {
+export function formatMetadata(metadata: MprisMetadata, image: string) {
 	const t = new code.MarkdownString('', true);
 
 	t.isTrusted = true;
@@ -53,17 +45,10 @@ function formatMetadata(metadata, image) {
 	return t;
 }
 
-/**
- * @implements {types.Disposable}
- * @implements {types.MprisSink}
- */
-class MprisStatusService {
-	/** @type {code.StatusBarItem | undefined} */
-	#item;
-	/** @type {code.EventEmitter<void>} */
-	#onStart = new code.EventEmitter();
-	/** @type {code.EventEmitter<void>} */
-	#onStop = new code.EventEmitter();
+export class MprisStatusService implements code.Disposable, MprisSink {
+	#item: code.StatusBarItem | undefined;
+	readonly #onStart = new code.EventEmitter<void>();
+	readonly #onStop = new code.EventEmitter<void>();
 
 	get onStart() {
 		return this.#onStart.event;
@@ -108,10 +93,7 @@ class MprisStatusService {
 		this.#item.command = undefined;
 	}
 
-	/**
-	 * @param {types.MprisMetadata} metadata
-	 */
-	async update(metadata) {
+	async update(metadata: MprisMetadata) {
 		if (!this.#item) return;
 		console.debug('MPRIS status: Got metadata:', metadata);
 
@@ -133,5 +115,3 @@ class MprisStatusService {
 		this.#item.command = undefined;
 	}
 }
-
-module.exports = {artImageSize, formatMetadata, MprisStatusService};

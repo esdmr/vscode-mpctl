@@ -1,8 +1,5 @@
 import {type MessageBus, type DBusInterface} from 'dbus-ts';
-import type {Disposable} from 'vscode';
 import type {Interfaces} from '@dbus-types/dbus';
-
-export type {Disposable, Uri} from 'vscode';
 
 export type MetadataMap = Readonly<Record<string, unknown>>;
 export type Playlist = readonly [unknown, string, string];
@@ -169,21 +166,8 @@ export type ChangedProperties<T> = {
 	readonly [K in keyof T]?: T[K] extends Promise<infer V> ? Awaited<V> : never;
 };
 
-export type MprisMetadata = {
-	title: string;
-	artists: string[];
-	album: string;
-	artUrl: string;
-	playing: boolean;
-};
-
 export type PropertiesChangedHandler = (
 	interfaceName: string,
 	changedProperties: ChangedProperties<MediaPlayer2Player>,
 	invalidatedProperties: readonly string[],
 ) => Promise<void>;
-
-export type MprisSink = {
-	onStart(handler: () => void): Disposable;
-	update(metadata: MprisMetadata): Promise<void>;
-};
