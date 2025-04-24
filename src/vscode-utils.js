@@ -37,31 +37,17 @@ function formatMetadata(metadata, image) {
 			),
 		);
 
-		t.appendMarkdown('\u{200B}*\n');
+		t.appendMarkdown('\u{200B}*\n\n');
 	}
 
 	if (metadata.album) {
 		t.appendMarkdown('from *\u{200B}');
 		t.appendText(metadata.album);
-		t.appendMarkdown('\u{200B}*\n');
+		t.appendMarkdown('\u{200B}*\n\n');
 	}
 
 	t.appendMarkdown(
-		`\n<table style="width: 128px"><tr><td align="center"><a href="command:mpctl.previous">$(debug-reverse-continue)</a>${alignmentImage}</td>`,
-	);
-
-	if (metadata.playing) {
-		t.appendMarkdown(
-			`<td align="center"><a href="command:mpctl.play_pause">$(debug-pause)</a>${alignmentImage}</td>`,
-		);
-	} else {
-		t.appendMarkdown(
-			`<td align="center"><a href="command:mpctl.play_pause">$(debug-start)</a>${alignmentImage}</td>`,
-		);
-	}
-
-	t.appendMarkdown(
-		`<td align="center"><a href="command:mpctl.next">$(debug-continue)</a>${alignmentImage}</td></tr></table>`,
+		`<table style="width: 128px"><tr><td align="center"><a href="command:mpctl.previous">$(debug-reverse-continue)</a>${alignmentImage}</td><td align="center"><a href="command:mpctl.play_pause">$(debug-start)</a>${alignmentImage}</td><td align="center"><a href="command:mpctl.next">$(debug-continue)</a>${alignmentImage}</td></tr></table>`,
 	);
 
 	return t;
