@@ -116,7 +116,7 @@
     "@dbus-types/dbus": "0.0.4",
     "@types/node": "20.17.30",
     "@types/vscode": "1.99.0",
-    "@vscode/vsce": "3.2.1",
+    "@vscode/vsce": "3.3.2",
     "tsup": "8.4.0",
     "webpack": "npm:ignoredep@200.9999.0",
     "xo": "0.60.0"
