@@ -198,40 +198,8 @@ class MprisSinkCache {
 	#sink;
 	/** @type {types.Disposable | undefined} */
 	#sinkStartHandler;
-	/** @type {types.MetadataMap | undefined} */
-	#metadataMap;
-	/** @type {string | undefined} */
-	#playbackStatus;
 	/** @type {types.MprisMetadata | undefined} */
 	#cachedMetadata;
-	/**
-	 * @type {types.PropertiesChangedHandler}
-	 */
-	callback = async (
-		_interfaceName,
-		changedProperties,
-		_invalidatedProperties,
-	) => {
-		if (changedProperties.Metadata) {
-			this.#metadataMap = changedProperties.Metadata;
-		}
-
-		if (changedProperties.PlaybackStatus) {
-			this.#playbackStatus = changedProperties.PlaybackStatus;
-		}
-
-		if (
-			(changedProperties.Metadata || changedProperties.PlaybackStatus) &&
-			this.#metadataMap &&
-			this.#playbackStatus
-		) {
-			this.#cachedMetadata = buildMprisMetadata(
-				this.#metadataMap,
-				this.#playbackStatus,
-			);
-			await this.#sink?.update(this.#cachedMetadata);
-		}
-	};
 
 	/**
 	 * @param {types.MprisSink | undefined} sink
@@ -247,9 +215,28 @@ class MprisSinkCache {
 		return this;
 	}
 
+	/**
+	 * @param {MprisBusCache} bus
+	 */
+	async update(bus) {
+		if (!bus.mprisPlayer) return;
+
+		this.#cachedMetadata = buildMprisMetadata(
+			await bus.mprisPlayer.Metadata,
+			await bus.mprisPlayer.PlaybackStatus,
+		);
+
+		await this.#sink?.update(this.#cachedMetadata);
+	}
+
+	/**
+	 * @param {MprisBusCache} bus
+	 */
+	bind(bus) {
+		return this.update.bind(this, bus);
+	}
+
 	clear() {
-		this.#metadataMap = undefined;
-		this.#playbackStatus = undefined;
 		this.#cachedMetadata = undefined;
 	}
 }
@@ -278,21 +265,11 @@ class MprisListenerService {
 	async start() {
 		if (this.#serviceChangeHandler) return;
 
-		await this.#bus.onPropertiesChanged(this.#sinkCache.callback);
+		await this.#bus.onPropertiesChanged(this.#sinkCache.bind(this.#bus));
 
-		this.#serviceChangeHandler = this.#bus.onServiceChanged(async () => {
-			const {mprisPlayer} = this.#bus;
-			if (!mprisPlayer) return;
-
-			this.#sinkCache.callback(
-				'',
-				{
-					Metadata: await mprisPlayer.Metadata,
-					PlaybackStatus: await mprisPlayer.PlaybackStatus,
-				},
-				[],
-			);
-		});
+		this.#serviceChangeHandler = this.#bus.onServiceChanged(
+			this.#sinkCache.bind(this.#bus),
+		);
 
 		await this.#bus.start();
 	}
