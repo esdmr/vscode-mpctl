@@ -1,0 +1,9 @@
+.vscode
+node_modules
+.gitignore
+.npmrc
+.xo-config.json
+*.vsix
+pnpm-lock.yaml
+renovate.json
+tsconfig.json

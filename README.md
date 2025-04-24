@@ -8,5 +8,7 @@ Control any media player that supports MPRIS.
 git clone https://github.com/esdmr/vscode-mpctl
 cd vscode-mpctl
 corepack pnpm i -P
-ln -fis $PWD ~/.vscode/extensions/esdmr.mpctl
+corepack pnpm run bundle
+corepack pnpm run package -o mpctl.vsix
+code --install-extension ./mpctl.vsix
 ```
