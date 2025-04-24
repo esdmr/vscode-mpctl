@@ -37,6 +37,10 @@ class MprisBusCache {
 	/** @type {types.PropertiesChangedHandler | undefined} */
 	#propertiesChangedHandler;
 
+	get service() {
+		return this.#service;
+	}
+
 	get mprisPlayer() {
 		return this.#mprisPlayer;
 	}

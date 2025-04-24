@@ -45,6 +45,28 @@ async function activate(context) {
 			code.commands.registerCommand('mpctl.stop', async () => {
 				await bus.sendMprisCommand('Stop');
 			}),
+			code.commands.registerCommand('mpctl.switch', async () => {
+				const services = await bus.getServices();
+				/** @type {code.QuickPickItem[]} */
+				const items = [];
+
+				for (const i of services) {
+					items.push({
+						// eslint-disable-next-line no-await-in-loop
+						label: await bus.getServiceName(i),
+						description: i,
+						picked: bus.service === i,
+					});
+				}
+
+				const selection = await code.window.showQuickPick(items, {
+					placeHolder: 'Player',
+				});
+
+				if (selection) {
+					bus.setService(selection.description);
+				}
+			}),
 		);
 	} catch (error) {
 		await bus.stop();

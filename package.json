@@ -115,6 +115,13 @@
         "shortTitle": "Stop",
         "icon": "$(debug-stop)",
         "category": "MPRIS Media Control"
+      },
+      {
+        "command": "mpctl.switch",
+        "title": "Switch Player",
+        "shortTitle": "Switch",
+        "icon": "$(run-all)",
+        "category": "MPRIS Media Control"
       }
     ]
   }
