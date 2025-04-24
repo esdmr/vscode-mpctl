@@ -1,93 +1,19 @@
-/** @import {MediaPlayer2, MprisMetadata} from './types.js' */
-/** @import {MessageBus} from 'dbus-ts' */
+/** @import * as types from './types.js' */
 const code = require('vscode');
-const {sessionBus} = require('dbus-ts');
-const {
-	getMprisServices,
-	sendMprisCommand,
-	listenToMpris,
-} = require('./mpris-utils.js');
-const {fetchImage, resizeImage} = require('./image-utils.js');
-const {artImageSize, formatMetadata} = require('./vscode-utils.js');
+const {MprisBusCache, MprisListenerService} = require('./mpris-utils.js');
+const {MprisStatusService} = require('./vscode-utils.js');
 
-/** @type {MessageBus<MediaPlayer2> | undefined} */
-let bus;
-
-/** @type {string} */
-let service = '';
-
-/** @type {WritableStream<MprisMetadata> | undefined} */
-let status;
-
-/** @type {ReadableStream<MprisMetadata> | undefined} */
-let metadataStream;
+const status = new MprisStatusService();
+const bus = new MprisBusCache();
+const listener = new MprisListenerService(bus).setSink(status);
 
 async function reconnectDbus() {
-	await metadataStream?.cancel();
-	metadataStream = undefined;
-
-	bus?.connection.end();
-	bus = await sessionBus();
-
-	/** @type {string[]} */
-	[service = ''] = await getMprisServices(bus);
-	if (!service) return;
-
-	metadataStream = listenToMpris(bus, service);
-
-	status ??= createStatus();
-
-	metadataStream.pipeTo(status, {
-		preventClose: true,
-		preventAbort: true,
-	});
-}
-
-/**
- * @returns {WritableStream<MprisMetadata>}
- */
-function createStatus() {
-	/** @type {code.StatusBarItem} */
-	let status;
-
-	return new WritableStream({
-		start() {
-			console.log('MPRIS status: Starting status.', status);
-			status = code.window.createStatusBarItem(code.StatusBarAlignment.Right);
-			status.name = 'MPRIS Media Control';
-			status.text = '$(music)';
-			status.show();
-		},
-		async write(metadata) {
-			console.debug('MPRIS status: Got metadata:', metadata);
-
-			if (!metadata.title) {
-				status.text = '$(music)';
-				status.tooltip = undefined;
-				status.command = service ? 'mpctl.play' : undefined;
-				return;
-			}
-
-			const image = await resizeImage(
-				await fetchImage(code.Uri.parse(metadata.artUrl, true)),
-				artImageSize,
-			);
-
-			status.text =
-				(metadata.playing ? '$(debug-start) ' : '$(debug-pause) ') +
-				metadata.title;
-			status.tooltip = formatMetadata(metadata, image);
-			status.command = undefined;
-		},
-		close() {
-			console.log('MPRIS status: Closed');
-			status.dispose();
-		},
-		abort(reason) {
-			console.error('MPRIS status: Aborted:', reason);
-			status.dispose();
-		},
-	});
+	await listener.stop();
+	await bus.stop();
+	status.clear();
+	await bus.start();
+	await listener.start();
+	status.start();
 }
 
 /**
@@ -99,57 +25,37 @@ async function activate(context) {
 
 		context.subscriptions.push(
 			code.commands.registerCommand('mpctl.next', async () => {
-				if (!bus || !service) await reconnectDbus();
-				if (!bus || !service) return;
-				await sendMprisCommand(bus, service, 'Next');
+				await bus.sendMprisCommand('Next');
 			}),
 			code.commands.registerCommand('mpctl.pause', async () => {
-				if (!bus || !service) await reconnectDbus();
-				if (!bus || !service) return;
-				await sendMprisCommand(bus, service, 'Pause');
+				await bus.sendMprisCommand('Pause');
 			}),
 			code.commands.registerCommand('mpctl.play_pause', async () => {
-				if (!bus || !service) await reconnectDbus();
-				if (!bus || !service) return;
-				await sendMprisCommand(bus, service, 'PlayPause');
+				await bus.sendMprisCommand('PlayPause');
 			}),
 			code.commands.registerCommand('mpctl.play', async () => {
-				if (!bus || !service) await reconnectDbus();
-				if (!bus || !service) return;
-				await sendMprisCommand(bus, service, 'Play');
+				await bus.sendMprisCommand('Play');
 			}),
 			code.commands.registerCommand('mpctl.previous', async () => {
-				if (!bus || !service) await reconnectDbus();
-				if (!bus || !service) return;
-				await sendMprisCommand(bus, service, 'Previous');
+				await bus.sendMprisCommand('Previous');
 			}),
 			code.commands.registerCommand('mpctl.reconnect', async () => {
-				if (!bus || !service) await reconnectDbus();
+				await reconnectDbus();
 			}),
 			code.commands.registerCommand('mpctl.stop', async () => {
-				if (!bus || !service) await reconnectDbus();
-				if (!bus || !service) return;
-				await sendMprisCommand(bus, service, 'Stop');
+				await bus.sendMprisCommand('Stop');
 			}),
 		);
 	} catch (error) {
-		bus?.connection.end();
-		bus = undefined;
+		await bus.stop();
 		throw error;
 	}
 }
 
 async function deactivate() {
-	const reason = new Error('Extension is being deactivated');
-
-	await metadataStream?.cancel(reason);
-	metadataStream = undefined;
-
-	await status?.abort(reason);
-	status = undefined;
-
-	bus?.connection.end();
-	bus = undefined;
+	await listener.asyncDispose();
+	await bus.asyncDispose();
+	status.dispose();
 }
 
 module.exports = {activate, deactivate};

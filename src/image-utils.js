@@ -1,7 +1,4 @@
-/**
- * @see https://github.com/esdmr/notepadd/blob/fbd1e9e7b1a33b2ab72524704a57ac291c53bbf2/vscode-notepadd/src/command/export-to-latex.ts
- */
-/** @import {Uri} from 'vscode' */
+/** @import * as types from './types.js' */
 const {Buffer} = require('node:buffer');
 const mimeSniffer = require('mime-sniffer');
 const code = require('vscode');
@@ -18,7 +15,7 @@ const blankImageUrl =
 	'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
 
 /**
- * @param {Uri} uri
+ * @param {types.Uri} uri
  * @returns {Promise<string>}
  */
 async function fetchImage(uri) {

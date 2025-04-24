@@ -1,145 +1,320 @@
-/** @import {ChangedProperties, MediaPlayer2, MediaPlayer2Player, Metadata_Map, MprisMetadata, Playback_Status} from './types.js' */
-/** @import {DBusInterface, MessageBus} from 'dbus-ts' */
+/** @import * as types from './types.js' */
+const code = require('vscode');
+const {sessionBus} = require('dbus-ts');
 const {ensureString, ensureArray} = require('./type-utils.js');
 const {blankImageUrl} = require('./image-utils.js');
 
 /**
- * @param {MessageBus<{}>} bus
+ * @param {types.MetadataMap} metadataMap
+ * @param {string} playbackStatus
+ * @returns {types.MprisMetadata}
  */
-async function getMprisServices(bus) {
-	const dbusInterface = await bus.getInterface(
-		'org.freedesktop.DBus',
-		'/org/freedesktop/DBus',
-		'org.freedesktop.DBus',
-	);
-	const [services] = await dbusInterface.ListNames();
-
-	return services.filter((service) =>
-		service.startsWith('org.mpris.MediaPlayer2.'),
-	);
-}
-
-/**
- * @param {Readonly<Metadata_Map>} metadata
- * @param {Playback_Status} playbackStatus
- * @returns {MprisMetadata}
- */
-function buildMprisMetadata(metadata, playbackStatus) {
+function buildMprisMetadata(metadataMap, playbackStatus) {
 	return {
-		title: ensureString(metadata['xesam:title']),
-		artists: ensureArray(metadata['xesam:artist'])
+		title: ensureString(metadataMap['xesam:title']),
+		artists: ensureArray(metadataMap['xesam:artist'])
 			.map((i) => ensureString(i))
 			.filter(Boolean),
-		album: ensureString(metadata['xesam:album']),
-		artUrl: ensureString(metadata['mpris:artUrl']) || blankImageUrl,
+		album: ensureString(metadataMap['xesam:album']),
+		artUrl: ensureString(metadataMap['mpris:artUrl']) || blankImageUrl,
 		playing: playbackStatus === 'Playing',
 	};
 }
 
-/**
- * @param {MessageBus<MediaPlayer2>} bus
- * @param {string} service
- */
-async function getMprisMetadata(bus, service) {
-	const player = await bus.getInterface(
-		service,
-		'/org/mpris/MediaPlayer2',
-		'org.mpris.MediaPlayer2.Player',
-	);
+class MprisBusCache {
+	/** @type {types.MprisMessageBus | undefined} */
+	#bus;
+	/** @type {string | undefined} */
+	#service;
+	/** @type {types.Interface<'org.freedesktop.DBus'> | undefined} */
+	#dbusRoot;
+	/** @type {types.Interface<'org.freedesktop.DBus.Properties'> | undefined} */
+	#dbusProperties;
+	/** @type {types.Interface<'org.mpris.MediaPlayer2.Player'> | undefined} */
+	#mprisPlayer;
+	/** @type {code.EventEmitter<void>} */
+	#onServiceChanged = new code.EventEmitter();
+	/** @type {types.PropertiesChangedHandler | undefined} */
+	#propertiesChangedHandler;
 
-	const metadata = await player.Metadata;
-	console.debug('MPRIS metadata:', metadata);
+	get mprisPlayer() {
+		return this.#mprisPlayer;
+	}
 
-	const playbackStatus = await player.PlaybackStatus;
-	console.debug('MPRIS playback status:', playbackStatus);
+	get onServiceChanged() {
+		return this.#onServiceChanged.event;
+	}
 
-	return buildMprisMetadata(metadata, playbackStatus);
+	async start() {
+		if (this.#bus && this.#service) return;
+
+		this.#bus ??= await sessionBus();
+
+		this.#dbusRoot = await this.#bus.getInterface(
+			'org.freedesktop.DBus',
+			'/org/freedesktop/DBus',
+			'org.freedesktop.DBus',
+		);
+
+		const [service] = await this.getServices();
+		this.setService(service);
+	}
+
+	async stop() {
+		if (!this.#bus) return;
+
+		await this.setService(undefined);
+		this.#dbusRoot = undefined;
+		this.#bus.connection.end();
+		this.#bus = undefined;
+	}
+
+	async asyncDispose() {
+		await this.stop();
+		this.#onServiceChanged.dispose();
+		this.#propertiesChangedHandler = undefined;
+	}
+
+	/**
+	 * @param {string | undefined} newService
+	 */
+	async setService(newService) {
+		if (!this.#bus) {
+			await this.start();
+		}
+
+		if (!this.#bus) {
+			throw new Error('D-Bus was not started yet');
+		}
+
+		if (this.#propertiesChangedHandler && this.#dbusProperties) {
+			await this.#dbusProperties.removeListener(
+				'PropertiesChanged',
+				this.#propertiesChangedHandler,
+			);
+		}
+
+		this.#service = newService;
+
+		this.#dbusProperties = newService
+			? await this.#bus.getInterface(
+					newService,
+					'/org/mpris/MediaPlayer2',
+					'org.freedesktop.DBus.Properties',
+				)
+			: undefined;
+
+		this.#mprisPlayer = newService
+			? await this.#bus.getInterface(
+					newService,
+					'/org/mpris/MediaPlayer2',
+					'org.mpris.MediaPlayer2.Player',
+				)
+			: undefined;
+
+		if (this.#propertiesChangedHandler && this.#dbusProperties) {
+			await this.#dbusProperties.addListener(
+				'PropertiesChanged',
+				this.#propertiesChangedHandler,
+			);
+		}
+
+		this.#onServiceChanged.fire();
+	}
+
+	/**
+	 * @param {types.PropertiesChangedHandler | undefined} handler
+	 */
+	async onPropertiesChanged(handler) {
+		if (this.#propertiesChangedHandler && this.#dbusProperties) {
+			await this.#dbusProperties.removeListener(
+				'PropertiesChanged',
+				this.#propertiesChangedHandler,
+			);
+		}
+
+		this.#propertiesChangedHandler = handler;
+
+		if (handler && this.#dbusProperties) {
+			await this.#dbusProperties.addListener('PropertiesChanged', handler);
+		}
+	}
+
+	async getServices() {
+		if (!this.#dbusRoot) {
+			await this.start();
+		}
+
+		if (!this.#dbusRoot) {
+			throw new Error('D-Bus was not started yet');
+		}
+
+		const [services] = await this.#dbusRoot.ListNames();
+
+		return services.filter((service) =>
+			service.startsWith('org.mpris.MediaPlayer2.'),
+		);
+	}
+
+	/**
+	 * @param {string} service
+	 */
+	async getServiceName(service) {
+		if (!this.#bus) {
+			await this.start();
+		}
+
+		if (!this.#bus) {
+			throw new Error('D-Bus was not started yet');
+		}
+
+		const mprisRoot = await this.#bus.getInterface(
+			service,
+			'/org/mpris/MediaPlayer2',
+			'org.mpris.MediaPlayer2',
+		);
+
+		return mprisRoot.Identity;
+	}
+
+	/**
+	 * @param {'Next' | 'Previous' | 'Pause' | 'PlayPause' | 'Stop' | 'Play'} command
+	 */
+	async sendMprisCommand(command) {
+		if (!this.#mprisPlayer) {
+			await this.start();
+		}
+
+		if (!this.#mprisPlayer) {
+			throw new Error('D-Bus service was not set yet');
+		}
+
+		await this.#mprisPlayer[command]();
+	}
 }
 
-/**
- * @param {MessageBus<MediaPlayer2>} bus
- * @param {string} service
- * @param {'Next' | 'Previous' | 'Pause' | 'PlayPause' | 'Stop' | 'Play'} command
- */
-async function sendMprisCommand(bus, service, command) {
-	const player = await bus.getInterface(
-		service,
-		'/org/mpris/MediaPlayer2',
-		'org.mpris.MediaPlayer2.Player',
-	);
+class MprisSinkCache {
+	/** @type {types.MprisSink | undefined} */
+	#sink;
+	/** @type {types.Disposable | undefined} */
+	#sinkStartHandler;
+	/** @type {types.MetadataMap | undefined} */
+	#metadataMap;
+	/** @type {string | undefined} */
+	#playbackStatus;
+	/** @type {types.MprisMetadata | undefined} */
+	#cachedMetadata;
+	/**
+	 * @type {types.PropertiesChangedHandler}
+	 */
+	callback = async (
+		_interfaceName,
+		changedProperties,
+		_invalidatedProperties,
+	) => {
+		if (changedProperties.Metadata) {
+			this.#metadataMap = changedProperties.Metadata;
+		}
 
-	await player[command]();
+		if (changedProperties.PlaybackStatus) {
+			this.#playbackStatus = changedProperties.PlaybackStatus;
+		}
+
+		if (
+			(changedProperties.Metadata || changedProperties.PlaybackStatus) &&
+			this.#metadataMap &&
+			this.#playbackStatus
+		) {
+			this.#cachedMetadata = buildMprisMetadata(
+				this.#metadataMap,
+				this.#playbackStatus,
+			);
+			await this.#sink?.update(this.#cachedMetadata);
+		}
+	};
+
+	/**
+	 * @param {types.MprisSink | undefined} sink
+	 */
+	setSink(sink) {
+		this.#sinkStartHandler?.dispose();
+		this.#sink = sink;
+
+		this.#sinkStartHandler = sink?.onStart(() => {
+			if (this.#cachedMetadata) sink.update(this.#cachedMetadata);
+		});
+
+		return this;
+	}
+
+	clear() {
+		this.#metadataMap = undefined;
+		this.#playbackStatus = undefined;
+		this.#cachedMetadata = undefined;
+	}
 }
 
-/**
- * @param {MessageBus<MediaPlayer2>} bus
- * @param {string} service
- * @returns {ReadableStream<MprisMetadata>}
- */
-function listenToMpris(bus, service) {
-	/** @type {DBusInterface} */
-	let properties;
+class MprisListenerService {
+	#bus;
+	#sinkCache = new MprisSinkCache();
+	/** @type {types.Disposable | undefined} */
+	#serviceChangeHandler;
 
-	/** @type {(interfaceName: string, changedProperties: ChangedProperties<MediaPlayer2Player>, invalidatedProperties: readonly string[]) => void} */
-	let callback;
+	/**
+	 * @param {MprisBusCache} bus
+	 */
+	constructor(bus) {
+		this.#bus = bus;
+	}
 
-	return new ReadableStream({
-		async start(controller) {
-			const player = await bus.getInterface(
-				service,
-				'/org/mpris/MediaPlayer2',
-				'org.mpris.MediaPlayer2.Player',
+	/**
+	 * @param {types.MprisSink | undefined} sink
+	 */
+	setSink(sink) {
+		this.#sinkCache.setSink(sink);
+		return this;
+	}
+
+	async start() {
+		if (this.#serviceChangeHandler) return;
+
+		await this.#bus.onPropertiesChanged(this.#sinkCache.callback);
+
+		this.#serviceChangeHandler = this.#bus.onServiceChanged(async () => {
+			const {mprisPlayer} = this.#bus;
+			if (!mprisPlayer) return;
+
+			this.#sinkCache.callback(
+				'',
+				{
+					Metadata: await mprisPlayer.Metadata,
+					PlaybackStatus: await mprisPlayer.PlaybackStatus,
+				},
+				[],
 			);
+		});
 
-			properties = await bus.getInterface(
-				service,
-				'/org/mpris/MediaPlayer2',
-				'org.freedesktop.DBus.Properties',
-			);
+		await this.#bus.start();
+	}
 
-			/** @type {Readonly<Metadata_Map>} */
-			let metadata;
-			/** @type {Playback_Status} */
-			let playbackStatus;
+	async stop() {
+		if (!this.#serviceChangeHandler) return;
 
-			callback = (
-				_interfaceName,
-				changedProperties,
-				_invalidatedProperties,
-			) => {
-				if (changedProperties.Metadata) {
-					metadata = changedProperties.Metadata;
-				}
+		this.#serviceChangeHandler?.dispose();
+		this.#serviceChangeHandler = undefined;
 
-				if (changedProperties.PlaybackStatus) {
-					playbackStatus = changedProperties.PlaybackStatus;
-				}
+		await this.#bus.onPropertiesChanged(undefined);
 
-				if (
-					changedProperties.Metadata ||
-					changedProperties.PlaybackStatus ||
-					metadata ||
-					playbackStatus
-				) {
-					controller.enqueue(buildMprisMetadata(metadata, playbackStatus));
-				}
-			};
+		this.#sinkCache.clear();
+	}
 
-			await properties.addListener('PropertiesChanged', callback);
-
-			metadata = await player.Metadata;
-			playbackStatus = await player.PlaybackStatus;
-			controller.enqueue(buildMprisMetadata(metadata, playbackStatus));
-		},
-		async cancel() {
-			await properties.removeListener('PropertiesChanged', callback);
-		},
-	});
+	async asyncDispose() {
+		await this.stop();
+		this.setSink(undefined);
+	}
 }
 
 module.exports = {
-	getMprisServices,
-	getMprisMetadata,
-	sendMprisCommand,
-	listenToMpris,
+	MprisBusCache,
+	MprisListenerService,
 };

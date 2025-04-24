@@ -1,20 +1,15 @@
-type Object_Path = unknown;
-type Variant = unknown;
-type Int64 = bigint;
-type Uint32 = number;
+import {type MessageBus, type DBusInterface} from 'dbus-ts';
+import type {Disposable} from 'vscode';
+import type {Interfaces} from '@dbus-types/dbus';
 
-export type Track_Id = Object_Path;
-export type Playback_Rate = number;
-export type Volume = number;
-export type Time_In_Us = Int64;
-export type Playback_Status = string;
-export type Loop_Status = string;
-export type Metadata_Map = Record<string, Variant>;
-export type Playlist_Id = Object_Path;
-export type Uri = string;
-export type Playlist_Ordering = string;
-export type Playlist = [Object_Path, string, string];
-export type Maybe_Playlist = [Object_Path, [Object_Path, string, string]];
+export type {Disposable, Uri} from 'vscode';
+
+export type MetadataMap = Readonly<Record<string, unknown>>;
+export type Playlist = readonly [unknown, string, string];
+export type MaybePlaylist = readonly [
+	unknown,
+	readonly [unknown, string, string],
+];
 
 export type MediaPlayer2Root = {
 	// CanQuit  b  Read only
@@ -45,15 +40,15 @@ export type MediaPlayer2Root = {
 
 export type MediaPlayer2Player = {
 	// PlaybackStatus  s (Playback_Status)  Read only
-	readonly PlaybackStatus: Promise<Playback_Status>;
+	readonly PlaybackStatus: Promise<string>;
 	// Metadata  a{sv} (Metadata_Map)  Read only
-	readonly Metadata: Promise<Readonly<Metadata_Map>>;
+	readonly Metadata: Promise<MetadataMap>;
 	// Position  x (Time_In_Us)  Read only
-	readonly Position: Promise<Time_In_Us>;
+	readonly Position: Promise<bigint>;
 	// MinimumRate  d (Playback_Rate)  Read only
-	readonly MinimumRate: Promise<Playback_Rate>;
+	readonly MinimumRate: Promise<number>;
 	// MaximumRate  d (Playback_Rate)  Read only
-	readonly MaximumRate: Promise<Playback_Rate>;
+	readonly MaximumRate: Promise<number>;
 	// CanGoNext  b  Read only
 	readonly CanGoNext: Promise<boolean>;
 	// CanGoPrevious  b  Read only
@@ -67,17 +62,17 @@ export type MediaPlayer2Player = {
 	// CanControl  b  Read only
 	readonly CanControl: Promise<boolean>;
 	// LoopStatus  s (Loop_Status)  Read/Write
-	get LoopStatus(): Promise<Loop_Status>;
-	set LoopStatus(value: Loop_Status);
+	get LoopStatus(): Promise<string>;
+	set LoopStatus(value: string);
 	// Rate  d (Playback_Rate)  Read/Write
-	get Rate(): Promise<Playback_Rate>;
-	set Rate(value: Playback_Rate);
+	get Rate(): Promise<number>;
+	set Rate(value: number);
 	// Shuffle  b  Read/Write
 	get Shuffle(): Promise<boolean>;
 	set Shuffle(value: boolean);
 	// Volume  d (Volume)  Read/Write
-	get Volume(): Promise<Volume>;
-	set Volume(value: Volume);
+	get Volume(): Promise<number>;
+	set Volume(value: number);
 
 	// Next  ()  →  nothing
 	Next(): Promise<void>;
@@ -92,76 +87,65 @@ export type MediaPlayer2Player = {
 	// Play  ()  →  nothing
 	Play(): Promise<void>;
 	// Seek  (x: Offset)  →  nothing
-	Seek(Offset: Int64): Promise<void>;
+	Seek(Offset: bigint): Promise<void>;
 	// SetPosition  (o: TrackId, x: Position)  →  nothing
-	SetPosition(TrackId: Object_Path, Position: Int64): Promise<void>;
+	SetPosition(TrackId: unknown, Position: bigint): Promise<void>;
 	// OpenUri  (s: Uri)  →  nothing
 	OpenUri(Uri: string): Promise<void>;
 
 	// Seeked  (x: Position)
-	Seeked(handler: (Position: Int64) => void): Promise<void>;
+	Seeked(handler: (Position: bigint) => void): Promise<void>;
 };
 
 export type MediaPlayer2TrackList = {
 	// Tracks  ao (Track_Id_List)  Read only
-	readonly Tracks: Promise<readonly Track_Id[]>;
+	readonly Tracks: Promise<readonly unknown[]>;
 	// CanEditTracks  b  Read only
 	readonly CanEditTracks: Promise<boolean>;
 
 	// GetTracksMetadata  (ao: TrackIds)  →  aa{sv}: Metadata
-	GetTracksMetadata(
-		ao: readonly Track_Id[],
-	): Promise<ReadonlyArray<Readonly<Metadata_Map>>>;
+	GetTracksMetadata(ao: readonly unknown[]): Promise<readonly MetadataMap[]>;
 	// AddTrack  (s: Uri, o: AfterTrack, b: SetAsCurrent)  →  nothing
 	AddTrack(
 		Uri: string,
-		AfterTrack: Object_Path,
+		AfterTrack: unknown,
 		SetAsCurrent: boolean,
 	): Promise<void>;
 	// RemoveTrack  (o: TrackId)  →  nothing
-	RemoveTrack(TrackId: Object_Path): Promise<void>;
+	RemoveTrack(TrackId: unknown): Promise<void>;
 	// GoTo  (o: TrackId)  →  nothing
-	GoTo(TrackId: Object_Path): Promise<void>;
+	GoTo(TrackId: unknown): Promise<void>;
 
 	// TrackListReplaced  (ao: Tracks, o: CurrentTrack)
 	TrackListReplaced(
-		handler: (
-			Tracks: readonly Object_Path[],
-			CurrentTrack: Object_Path,
-		) => void,
+		handler: (Tracks: readonly unknown[], CurrentTrack: unknown) => void,
 	): Promise<void>;
 	// TrackAdded  (a{sv}: Metadata, o: AfterTrack)
 	TrackAdded(
-		handler: (
-			Metadata: Readonly<Metadata_Map>,
-			AfterTrack: Object_Path,
-		) => void,
+		handler: (Metadata: MetadataMap, AfterTrack: unknown) => void,
 	): Promise<void>;
 	// TrackRemoved  (o: TrackId)
-	TrackRemoved(handler: (TrackId: Object_Path) => void): Promise<void>;
+	TrackRemoved(handler: (TrackId: unknown) => void): Promise<void>;
 	// TrackMetadataChanged  (o: TrackId, a{sv}: Metadata)
 	TrackMetadataChanged(
-		handler: (
-			TrackId: Object_Path,
-			Metadata: Readonly<Metadata_Map>,
-		) => void,
+		handler: (TrackId: unknown, Metadata: MetadataMap) => void,
 	): Promise<void>;
 };
 
 export type MediaPlayer2PlayLists = {
 	// PlaylistCount  u  Read only
-	readonly PlaylistCount: Promise<Uint32>;
+	readonly PlaylistCount: Promise<number>;
 	// Orderings  as ( Playlist_Ordering_List)  Read only
-	readonly Orderings: Promise<Playlist_Ordering[]>;
+	readonly Orderings: Promise<string[]>;
 	// ActivePlaylist  (b(oss)) ( Maybe_Playlist)  Read only
-	readonly ActivePlaylist: Promise<Maybe_Playlist>;
+	readonly ActivePlaylist: Promise<MaybePlaylist>;
 
 	// ActivatePlaylist  (o: PlaylistId)  →  nothing
-	ActivatePlaylist(PlaylistId: Object_Path): Promise<void>;
+	ActivatePlaylist(PlaylistId: unknown): Promise<void>;
 	// GetPlaylists  (u: Index, u: MaxCount, s: Order, b: ReverseOrder)  →  a(oss): Playlists
 	GetPlaylists(
-		Index: Uint32,
-		MaxCount: Uint32,
+		Index: number,
+		MaxCount: number,
 		Order: string,
 		ReverseOrder: boolean,
 	): Promise<readonly Playlist[]>;
@@ -170,17 +154,19 @@ export type MediaPlayer2PlayLists = {
 	PlaylistChanged(handler: (Playlist: Playlist) => void): void;
 };
 
-export type MediaPlayer2 = {
+export type MediaPlayer2 = Interfaces & {
 	'org.mpris.MediaPlayer2': MediaPlayer2Root;
 	'org.mpris.MediaPlayer2.Player': MediaPlayer2Player;
 	'org.mpris.MediaPlayer2.TrackList': MediaPlayer2TrackList;
 	'org.mpris.MediaPlayer2.PlayLists': MediaPlayer2PlayLists;
 };
 
+export type MprisMessageBus = MessageBus<MediaPlayer2>;
+export type Interface<S extends keyof MediaPlayer2 = never> = DBusInterface &
+	MediaPlayer2[S];
+
 export type ChangedProperties<T> = {
-	readonly [K in keyof T]?: T[K] extends Promise<infer V>
-		? Awaited<V>
-		: never;
+	readonly [K in keyof T]?: T[K] extends Promise<infer V> ? Awaited<V> : never;
 };
 
 export type MprisMetadata = {
@@ -189,4 +175,15 @@ export type MprisMetadata = {
 	album: string;
 	artUrl: string;
 	playing: boolean;
+};
+
+export type PropertiesChangedHandler = (
+	interfaceName: string,
+	changedProperties: ChangedProperties<MediaPlayer2Player>,
+	invalidatedProperties: readonly string[],
+) => Promise<void>;
+
+export type MprisSink = {
+	onStart(handler: () => void): Disposable;
+	update(metadata: MprisMetadata): Promise<void>;
 };
