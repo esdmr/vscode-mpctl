@@ -15,9 +15,9 @@ export default defineConfig({
 	],
 	outDir: 'dist',
 	sourcemap: true,
+	removeNodeProtocol: false,
 	splitting: true,
-	minifyWhitespace: true,
-	minifySyntax: true,
+	minify: true,
 	target: 'node20',
 	treeshake: true,
 });

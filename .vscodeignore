@@ -1,5 +1,6 @@
 .vscode
 node_modules
+src
 .gitignore
 .npmrc
 .xo-config.json
@@ -7,3 +8,4 @@ node_modules
 pnpm-lock.yaml
 renovate.json
 tsconfig.json
+tsup.config.ts
