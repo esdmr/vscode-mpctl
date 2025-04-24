@@ -14,7 +14,7 @@
   },
   "description": "Control any media player that supports MPRIS",
   "devDependencies": {
-    "@dbus-types/dbus": "^0.0.4",
+    "@dbus-types/dbus": "0.0.4",
     "@types/node": "20.17.30",
     "@types/vscode": "1.99.0",
     "webpack": "npm:ignoredep@200.9999.0",
