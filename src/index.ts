@@ -1,6 +1,12 @@
-import code from 'vscode';
-import {MprisBusCache, MprisListenerService} from './mpris-utils.js';
-import {MprisStatusService} from './vscode-utils.js';
+import {
+	commands,
+	window,
+	type ExtensionContext,
+	type QuickPickItem,
+} from 'vscode';
+import {MprisListenerService} from './mpris/listener-service.js';
+import {MprisBusCache} from './mpris/bus-cache.js';
+import {MprisStatusService} from './vscode/status.js';
 
 const status = new MprisStatusService();
 const bus = new MprisBusCache();
@@ -15,35 +21,35 @@ async function reconnectDbus() {
 	status.start();
 }
 
-export async function activate(context: code.ExtensionContext) {
+export async function activate(context: ExtensionContext) {
 	try {
 		await reconnectDbus();
 
 		context.subscriptions.push(
-			code.commands.registerCommand('mpctl.next', async () => {
+			commands.registerCommand('mpctl.next', async () => {
 				await bus.sendMprisCommand('Next');
 			}),
-			code.commands.registerCommand('mpctl.pause', async () => {
+			commands.registerCommand('mpctl.pause', async () => {
 				await bus.sendMprisCommand('Pause');
 			}),
-			code.commands.registerCommand('mpctl.play_pause', async () => {
+			commands.registerCommand('mpctl.play_pause', async () => {
 				await bus.sendMprisCommand('PlayPause');
 			}),
-			code.commands.registerCommand('mpctl.play', async () => {
+			commands.registerCommand('mpctl.play', async () => {
 				await bus.sendMprisCommand('Play');
 			}),
-			code.commands.registerCommand('mpctl.previous', async () => {
+			commands.registerCommand('mpctl.previous', async () => {
 				await bus.sendMprisCommand('Previous');
 			}),
-			code.commands.registerCommand('mpctl.reconnect', async () => {
+			commands.registerCommand('mpctl.reconnect', async () => {
 				await reconnectDbus();
 			}),
-			code.commands.registerCommand('mpctl.stop', async () => {
+			commands.registerCommand('mpctl.stop', async () => {
 				await bus.sendMprisCommand('Stop');
 			}),
-			code.commands.registerCommand('mpctl.switch', async () => {
+			commands.registerCommand('mpctl.switch', async () => {
 				const services = await bus.getServices();
-				const items: code.QuickPickItem[] = [];
+				const items: QuickPickItem[] = [];
 
 				for (const i of services) {
 					items.push({
@@ -54,7 +60,7 @@ export async function activate(context: code.ExtensionContext) {
 					});
 				}
 
-				const selection = await code.window.showQuickPick(items, {
+				const selection = await window.showQuickPick(items, {
 					placeHolder: 'Player',
 				});
 

@@ -6,10 +6,7 @@ declare module 'mime-sniffer' {
 		database: Record<string, {mime: string; extension: string}>;
 		lookup(
 			file: string | buffer.Buffer,
-			done: (
-				error: unknown,
-				info: {mime: string; extension: string},
-			) => void,
+			done: (error: unknown, info: {mime: string; extension: string}) => void,
 		): void;
 	};
 

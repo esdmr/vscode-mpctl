@@ -110,7 +110,8 @@
   "dependencies": {
     "dbus-ts": "0.0.7",
     "jimp": "1.6.0",
-    "mime-sniffer": "0.0.3"
+    "mime-sniffer": "0.0.3",
+    "typescript-event-target": "^1.1.1"
   },
   "devDependencies": {
     "@dbus-types/dbus": "0.0.4",
@@ -129,6 +130,13 @@
   "pnpm": {
     "ignoredOptionalDependencies": [
       "@vscode/*"
+    ],
+    "ignoredBuiltDependencies": [
+      "@vscode/vsce-sign",
+      "keytar"
+    ],
+    "onlyBuiltDependencies": [
+      "esbuild"
     ]
   },
   "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
