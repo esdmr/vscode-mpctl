@@ -7,6 +7,7 @@ import {
 import {MprisListenerService} from './mpris/listener-service.js';
 import {MprisBusCache} from './mpris/bus-cache.js';
 import {MprisStatusService} from './vscode/status.js';
+import {showPlayerSelection} from './vscode/players.js';
 
 const status = new MprisStatusService();
 const bus = new MprisBusCache();
@@ -48,25 +49,8 @@ export async function activate(context: ExtensionContext) {
 				await bus.sendMprisCommand('Stop');
 			}),
 			commands.registerCommand('mpctl.switch', async () => {
-				const services = await bus.getServices();
-				const items: QuickPickItem[] = [];
-
-				for (const i of services) {
-					items.push({
-						// eslint-disable-next-line no-await-in-loop
-						label: await bus.getServiceName(i),
-						description: i,
-						picked: bus.service === i,
-					});
-				}
-
-				const selection = await window.showQuickPick(items, {
-					placeHolder: 'Player',
-				});
-
-				if (selection) {
-					await bus.setService(selection.description);
-				}
+				const selection = await showPlayerSelection(bus);
+				if (selection) await bus.setService(selection);
 			}),
 		);
 	} catch (error) {
