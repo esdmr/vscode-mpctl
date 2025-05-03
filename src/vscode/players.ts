@@ -8,7 +8,7 @@ export async function showPlayerSelection(bus: MprisBusCache) {
 	quickPick.placeholder = 'Player';
 	quickPick.show();
 
-	const result = new Promise((resolve) => {
+	const result = new Promise<string | undefined>((resolve) => {
 		quickPick.onDidAccept(() => {
 			resolve(quickPick.selectedItems[0]?.description);
 			quickPick.hide();
