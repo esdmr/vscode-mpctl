@@ -36,6 +36,11 @@ export class MprisBusCache extends TypedEventTarget<{
 			'org.freedesktop.DBus',
 		);
 
+		await this.#dbusRoot.RequestName(
+			`ir.esdmr.vscode_mpctl.pid_${process.pid}.vscode_mpctl`,
+			3,
+		);
+
 		const [service] = await this.getServices();
 		await this.setService(service);
 	}
