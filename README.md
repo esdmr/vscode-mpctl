@@ -69,6 +69,43 @@ The extension will provide the following:
 - A command to switch the player
 - A command to reconnect to D-Bus
 
+## Contributing
+
+### Prepare Your Development Environment
+
+```sh
+git clone https://github.com/esdmr/vscode-mpctl
+cd vscode-mpctl
+corepack pnpm i
+```
+
+Unlike the installation instructions, you should install every dependency, rather than only the development ones.
+
+### Build the extension
+
+```sh
+corepack pnpm run bundle
+```
+
+### Install the extension
+
+Since you are developing the extension, it might be helpful to symlink the built extension, rather than rely on `.vsix` packages.
+
+```sh
+ln -is "$PWD" "$HOME/.vscode/extensions/esdmr.mpctl"
+```
+
+### Lint the project
+
+```sh
+corepack pnpm run typecheck
+corepack pnpm run lint
+```
+
+### Submit a pull request
+
+If you would like to contribute, please fork the repository and open a pull request to the `main` branch.
+
 ## License
 
 This project is provided under the MIT license. Please see the `LICENSE` file for details.

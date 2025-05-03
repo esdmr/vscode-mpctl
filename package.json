@@ -42,7 +42,9 @@
   "main": "dist/index.js",
   "scripts": {
     "bundle": "tsup",
-    "package": "vsce package"
+    "package": "vsce package",
+    "typecheck": "tsc",
+    "lint": "xo"
   },
   "contributes": {
     "commands": [
