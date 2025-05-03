@@ -23,6 +23,7 @@ export class MprisStatusService
 
 		this.#item.name = 'MPRIS Media Control';
 		this.#item.text = '$(music)';
+		this.#item.command = 'mpctl.switch';
 
 		this.dispatchTypedEvent('start', new Event('start'));
 		this.#item.show();
@@ -45,7 +46,6 @@ export class MprisStatusService
 		if (!this.#item) return;
 		this.#item.text = '$(music)';
 		this.#item.tooltip = undefined;
-		this.#item.command = undefined;
 	}
 
 	async update(metadata: MprisMetadata) {
@@ -65,6 +65,5 @@ export class MprisStatusService
 			metadata.title;
 
 		this.#item.tooltip = formatMetadata(metadata, image);
-		this.#item.command = undefined;
 	}
 }
