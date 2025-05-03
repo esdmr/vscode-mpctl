@@ -1,7 +1,7 @@
 {
   "name": "mpctl",
   "displayName": "MPRIS Media Control",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Control any media player that supports MPRIS",
   "categories": [
     "Other"
