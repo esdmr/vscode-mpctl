@@ -113,7 +113,7 @@
     "dbus-ts": "0.0.7",
     "jimp": "1.6.0",
     "mime-sniffer": "0.0.3",
-    "typescript-event-target": "^1.1.1"
+    "typescript-event-target": "1.1.1"
   },
   "devDependencies": {
     "@dbus-types/dbus": "0.0.4",
