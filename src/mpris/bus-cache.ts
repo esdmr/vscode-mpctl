@@ -86,11 +86,7 @@ export class MprisBusCache extends TypedEventTarget<{
 			: undefined;
 
 		this.#mprisPlayer = newService
-			? await this.#bus.getInterface(
-					newService,
-					'/org/mpris/MediaPlayer2',
-					'org.mpris.MediaPlayer2.Player',
-				)
+			? await this.getServicePlayer(newService)
 			: undefined;
 
 		if (this.#propertiesChangedHandler && this.#dbusProperties) {
@@ -150,6 +146,22 @@ export class MprisBusCache extends TypedEventTarget<{
 		);
 
 		return mprisRoot.Identity;
+	}
+
+	async getServicePlayer(service: string) {
+		if (!this.#bus) {
+			await this.start();
+		}
+
+		if (!this.#bus) {
+			throw new Error('D-Bus was not started yet');
+		}
+
+		return this.#bus.getInterface(
+			service,
+			'/org/mpris/MediaPlayer2',
+			'org.mpris.MediaPlayer2.Player',
+		);
 	}
 
 	async sendMprisCommand(
