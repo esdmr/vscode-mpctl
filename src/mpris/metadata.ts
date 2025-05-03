@@ -10,16 +10,16 @@ export type MprisMetadata = {
 };
 
 export function buildMprisMetadata(
-	metadataMap: MetadataMap,
-	playbackStatus: string,
+	metadataMap: MetadataMap | undefined,
+	playbackStatus: string | undefined,
 ): MprisMetadata {
 	return {
-		title: ensureString(metadataMap['xesam:title']),
-		artists: ensureArray(metadataMap['xesam:artist'])
+		title: ensureString(metadataMap?.['xesam:title']),
+		artists: ensureArray(metadataMap?.['xesam:artist'])
 			.map((i) => ensureString(i))
 			.filter(Boolean),
-		album: ensureString(metadataMap['xesam:album']),
-		artUrl: ensureString(metadataMap['mpris:artUrl']),
+		album: ensureString(metadataMap?.['xesam:album']),
+		artUrl: ensureString(metadataMap?.['mpris:artUrl']),
 		playing: playbackStatus === 'Playing',
 	};
 }

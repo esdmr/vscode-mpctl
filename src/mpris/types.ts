@@ -39,7 +39,7 @@ export type MediaPlayer2Player = {
 	// PlaybackStatus  s (Playback_Status)  Read only
 	readonly PlaybackStatus: Promise<string>;
 	// Metadata  a{sv} (Metadata_Map)  Read only
-	readonly Metadata: Promise<MetadataMap>;
+	readonly Metadata: Promise<MetadataMap | undefined>;
 	// Position  x (Time_In_Us)  Read only
 	readonly Position: Promise<bigint>;
 	// MinimumRate  d (Playback_Rate)  Read only
