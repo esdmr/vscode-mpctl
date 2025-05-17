@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Tracks which do not have an image are now correctly handled.
+
 ## 0.2.0
 
 - Clicking on the status bar now allows for quickly switching the player.

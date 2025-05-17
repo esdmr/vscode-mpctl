@@ -57,8 +57,19 @@ export class MprisStatusService
 			return;
 		}
 
-		let image = await fetchImage(Uri.parse(metadata.artUrl, true));
-		image &&= await resizeImage(image, artImageSize);
+		let image = metadata.artUrl;
+
+		try {
+			image &&= await fetchImage(Uri.parse(metadata.artUrl, true));
+			image &&= await resizeImage(image, artImageSize);
+		} catch (error) {
+			console.error(
+				'MPRIS status: Failed to process the album/track art:',
+				error,
+			);
+
+			image = '';
+		}
 
 		this.#item.text =
 			(metadata.playing ? '$(debug-start) ' : '$(debug-pause) ') +

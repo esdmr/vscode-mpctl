@@ -6,10 +6,7 @@ const listFormat = new Intl.ListFormat('en');
 const alignmentImage = getAlignmentImage(36);
 export const artImageSize = 128;
 
-export function formatMetadata(
-	metadata: MprisMetadata,
-	image: string | undefined,
-) {
+export function formatMetadata(metadata: MprisMetadata, image: string) {
 	const t = new MarkdownString('', true);
 
 	t.isTrusted = true;

@@ -27,7 +27,7 @@ export async function fetchImage(uri: Uri) {
 		});
 	} catch (error) {
 		console.error('MPRIS Control: Unknown file extension:', uri.fsPath, error);
-		return;
+		return '';
 	}
 
 	return `data:${mime};base64,${buffer.toString('base64')}`;
